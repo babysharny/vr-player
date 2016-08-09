@@ -1,0 +1,13 @@
+{
+  "apidocFilename": "apidoc.md",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "body-parser": "~1.2.0",
+    "express": "4.x",
+    "moment": "*",
+    "request": "*",
+    "shelljs": "^0.7.3",
+    "underscore": "*"
+  }
+}
