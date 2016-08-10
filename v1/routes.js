@@ -124,7 +124,11 @@ module.exports = function() {
 			}
 			shell.echo('starting the game ' + req.params.employeeId);
 
-			var cmd = 'steam -applaunch ' + req.params.employeeId;
+			// var steamPath = 'steam'; 
+			var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"'; 
+			var cmd = steamPath + ' -applaunch ' + req.params.employeeId; 
+
+			// var cmd = 'steam -applaunch ' + req.params.employeeId;
 			console.log(cmd);
 			shell.exec(cmd);
 			shell.echo('game ' + req.params.employeeId + 'started');
