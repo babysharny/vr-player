@@ -124,8 +124,8 @@ module.exports = function() {
 			}
 			shell.echo('starting the game ' + req.params.employeeId);
 
-			// var steamPath = 'steam'; 
-			var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"'; 
+			var steamPath = 'steam';
+			// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
 			var cmd = steamPath + ' -applaunch ' + req.params.employeeId; 
 
 			// var cmd = 'steam -applaunch ' + req.params.employeeId;
@@ -134,16 +134,29 @@ module.exports = function() {
 			shell.echo('game ' + req.params.employeeId + 'started');
 			res.send('start game ' + req.params.employeeId);
 
-			// model.query("employees", { id: parseInt(req.params.employeeId) }, function(_response) {
-			// 	if(!_response.success) {
-			// 		errorHandling.handle(_response.error, res);
-			// 	} else {
-			// 		res.send(_response);
-			// 	}
-			// });
+		} catch(e) {
+			errorHandling.handle(e, res);
+		}
+	});
+
+
+	App.Express.get("/:version/steam", function(req, res) {
+		try {
+
+
+			var steamPath = 'steam';
+			// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
+
+			var cmd = steamPath + ' ' + req.query.cmd;
+
+			console.log(cmd);
+			shell.exec(cmd, {async: true});
+			// shell.echo('game ' + req.params.employeeId + 'started');
+			res.send('steam ' + req.query.cmd);
 
 		} catch(e) {
 			errorHandling.handle(e, res);
 		}
 	});
+
 };
