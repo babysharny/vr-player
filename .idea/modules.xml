@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/vr-player.iml" filepath="$PROJECT_DIR$/.idea/vr-player.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/iisnode.iml" filepath="$PROJECT_DIR$/.idea/iisnode.iml" />
     </modules>
   </component>
 </project>

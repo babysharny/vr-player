@@ -9,10 +9,199 @@ var tokens = require("../tokens");
 var config = require("../config").v1;
 
 var shell = require('shelljs');
-shell.echo('hello world');
+shell.echo('Starting VR API Server');
+
+var cp = require('child_process');
+var exe = require('path').normalize('./vendor/WinSendKeys/WinSendKeys.exe');
 
 module.exports = function() {
 	var model = require("./model")();
+
+	// var steamPath = '"C\\:Program Files (x86)\\Steam\\steam"';
+	// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
+	var steamPath = 'steam';
+
+
+	App.Express.get("/:version/test", function(req, res) {
+		try {
+			toLeft();
+			console.info('test');
+			res.send('test ' + steamPath);
+		} catch(e) {
+			console.error('catch ', e);
+			errorHandling.handle(e, res);
+		}
+	});
+
+	App.Express.get("/:version/restartSteam", function(req, res) {
+		try {
+			toLeft();
+			console.info('#### request', req);
+
+			var kill = 'taskkill /f /im steam*';
+			console.info('killing steam cmd ' + kill);
+
+			shell.exec(kill, {async: false});
+			
+			console.info('steam killed');
+
+			var run = 'steam';
+			run = steamPath;
+			console.info('run steam cmd '+run);
+
+			shell.exec(run, {async: true});
+
+			console.info('steam starting up');
+
+			res.send(kill + ' !!!! ' + run);
+
+		} catch(e) {
+			console.error('catch ', e);
+			errorHandling.handle(e, res);
+		}
+	});
+
+
+	App.Express.get("/:version/play", function (req, res) {
+		try {
+			console.info('play');
+
+
+			res.send('play');
+
+		} catch (e) {
+			errorHandling.handle(e, res);
+		}
+	});
+
+	App.Express.get("/:version/video", function (req, res) {
+		var windowName = req.body.app || req.query.app || '[ACTIVE]';
+		var keyStrokes = req.body.keys || req.query.keys || '';
+		var keyStrokes = '^#{RIGHT}';
+
+		console.log('keys' + keyStrokes);
+		if (keyStrokes === '') {
+			res.status(400).json({ error: 'message' });
+		} else {
+			var keys = keyStrokes.replace('^','^^');
+
+			keys = '"'+keys+'"';
+
+			var cmd = [exe,'-w',windowName,keys].join(' ');
+
+			cp.exec(cmd, function(err, stdout, stderr) {
+				if (err) {
+					res.status(400).json({ error: 'message' });
+				} else {
+					res.json({ success: 'message', received: keyStrokes, encoded: keys });
+				}
+			});
+		}
+	});
+
+	function toLeft() {
+		var windowName = '[ACTIVE]';
+		var keyStrokes = '^#{LEFT}';
+
+		console.log('keys' + keyStrokes);
+		if (keyStrokes === '') {
+			res.status(400).json({ error: 'message' });
+		} else {
+			var keys = keyStrokes.replace('^','^^');
+
+			keys = '"'+keys+'"';
+
+			var cmd = [exe,'-w',windowName,keys].join(' ');
+
+			cp.exec(cmd, function(err, stdout, stderr) { 
+				console.log('to left done');
+			});
+		}
+	}
+
+	App.Express.get("/:version/sendKeys", function (req, res) {
+		toLeft();
+		var windowName = req.body.app || req.query.app || '[ACTIVE]';
+		// var windowName = 'Video.UI.exe';
+		var keyStrokes = req.body.keys || req.query.keys || '';
+		console.log('keys' + keyStrokes);
+		if (keyStrokes === '') {
+			res.status(400).json({ error: 'message' });
+		} else {
+			var keys = keyStrokes.replace('^','^^');
+
+			keys = '"'+keys+'"';
+
+			//keys = keys.replace(/{[^}]*}/g, function(r) {  // Add quotes around commands with whitespace
+			//return '"'+r+'"';
+			//return r.replace(/\s+/g,'\\\ ');
+			//});
+
+			var cmd = [exe,'-w',windowName,keys].join(' ');
+
+			cp.exec(cmd, function(err, stdout, stderr) {
+				if (err) {
+					res.status(400).json({ error: 'message' });
+				} else {
+					res.json({ success: 'message', received: keyStrokes, encoded: keys });
+				}
+			});
+
+		}
+	});
+
+	App.Express.get("/:version/startSteam", function(req, res) {
+		try {
+			toLeft();
+			console.info('startSteam.');
+			var run = steamPath;
+			console.log('run steam cmd '+run);
+			shell.exec(run, {async: true});
+			console.log('steam starting up');
+
+			res.send(run);
+
+		} catch(e) {
+			errorHandling.handle(e, res);
+		}
+
+	});
+
+	App.Express.get("/:version/steam", function(req, res) {
+		try {
+			toLeft();
+
+			// var steamPath = 'steam';
+			var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
+
+			var cmd = steamPath + ' ' + req.query.cmd;
+
+			res.send('steam ' + req.query.cmd);
+
+			console.log(cmd);
+			shell.exec(cmd, {async: true});
+			// shell.echo('game ' + req.params.employeeId + 'started');
+			res.send('steam ' + req.query.cmd);
+
+		} catch(e) {
+			errorHandling.handle(e, res);
+		}
+	});
+
+
+	App.Express.get("/:version/cmd", function(req, res) {
+		try {
+			toLeft();
+			var cmd = req.query.cmd;
+			console.log('Execute Command\n', cmd);
+			shell.exec(cmd, {async: false});
+			// shell.echo('game ' + req.params.employeeId + 'started');
+			res.send(cmd);
+
+		} catch(e) {
+			errorHandling.handle(e, res);
+		}
+	});
 
 	// Validate token in routine
 	function validateToken(req, res, next) {
@@ -116,47 +305,29 @@ module.exports = function() {
 	 * @apiParam (Endpoint) {Number} employeeId The employee ID
 	 */
 
-	//http://store.steampowered.com/app/496920/
-	App.Express.get("/:version/employees/:employeeId", validateToken, function(req, res) {
-		try {
-			if(!req.params.employeeId) {
-				throw { code: "NO_EMPLOYEE_ID" };
-			}
-			shell.echo('starting the game ' + req.params.employeeId);
+	// //http://store.steampowered.com/app/496920/
+	// App.Express.get("/:version/employees/:employeeId", validateToken, function(req, res) {
+	// 	try {
+	// 		if(!req.params.employeeId) {
+	// 			throw { code: "NO_EMPLOYEE_ID" };
+	// 		}
+	// 		shell.echo('starting the game ' + req.params.employeeId);
 
-			var steamPath = 'steam';
-			// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
-			var cmd = steamPath + ' -applaunch ' + req.params.employeeId; 
+	// 		// var steamPath = 'steam';
+	// 		var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
+	// 		var cmd = steamPath + ' -applaunch ' + req.params.employeeId;
 
-			// var cmd = 'steam -applaunch ' + req.params.employeeId;
-			console.log(cmd);
-			shell.exec(cmd);
-			shell.echo('game ' + req.params.employeeId + 'started');
-			res.send('start game ' + req.params.employeeId);
+	// 		// var cmd = 'steam -applaunch ' + req.params.employeeId;
+	// 		console.log(cmd);
+	// 		shell.exec(cmd);
+	// 		shell.echo('game ' + req.params.employeeId + 'started');
+	// 		res.send('start game ' + req.params.employeeId);
 
-		} catch(e) {
-			errorHandling.handle(e, res);
-		}
-	});
-
-
-	App.Express.get("/:version/steam", function(req, res) {
-		try {
+	// 	} catch(e) {
+	// 		errorHandling.handle(e, res);
+	// 	}
+	// });
 
 
-			var steamPath = 'steam';
-			// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
-
-			var cmd = steamPath + ' ' + req.query.cmd;
-
-			console.log(cmd);
-			shell.exec(cmd, {async: true});
-			// shell.echo('game ' + req.params.employeeId + 'started');
-			res.send('steam ' + req.query.cmd);
-
-		} catch(e) {
-			errorHandling.handle(e, res);
-		}
-	});
 
 };

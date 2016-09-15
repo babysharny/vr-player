@@ -5,7 +5,7 @@ module.exports = {
 	/**
 	 * Server port
 	 */
-	port: 8080,
+	port: 81,
 	/**
 	 * Versioned configuration
 	 */
