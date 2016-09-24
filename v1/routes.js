@@ -11,21 +11,24 @@ var config = require("../config").v1;
 var shell = require('shelljs');
 shell.echo('Starting VR API Server');
 
+var appsObserver = require('./apps-observer');
+
 var cp = require('child_process');
 var exe = require('path').normalize('./vendor/WinSendKeys/WinSendKeys.exe');
 
 module.exports = function() {
 	var model = require("./model")();
-
-	// var steamPath = '"C\\:Program Files (x86)\\Steam\\steam"';
+		
 	// var steamPath = '"c:\\Program Files (x86)\\Steam\\steam"';
 	var steamPath = 'steam';
 
 
-	App.Express.get("/:version/test", function(req, res) {
+	App.Express.get("/:version/ping", function(req, res) {
 		try {
-			toLeft();
-			console.info('test');
+			console.info('test1');
+
+			appsObserver.observeApp();
+
 			res.send('test ' + steamPath);
 		} catch(e) {
 			console.error('catch ', e);
@@ -183,11 +186,24 @@ module.exports = function() {
 			// shell.echo('game ' + req.params.employeeId + 'started');
 			res.send('steam ' + req.query.cmd);
 
+			appsObserver.observeConfig(cmd);
+
 		} catch(e) {
 			errorHandling.handle(e, res);
 		}
 	});
 
+	App.Express.get("/:version/startGame", function(req, res) {
+		try {
+			// toLeft();
+			// console.log(req);
+			var game = req.query.game;
+			appsObserver.observeConfig(game);
+			res.send('game started ', game);
+		} catch(e) {
+			errorHandling.handle(e, res);
+		}
+	});
 
 	App.Express.get("/:version/cmd", function(req, res) {
 		try {
